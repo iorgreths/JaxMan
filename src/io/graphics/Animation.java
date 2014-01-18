@@ -42,6 +42,22 @@ public class Animation {
 
 	/**
 	 * 
+	 * @param toCopy
+	 */
+	public Animation(Animation toCopy){
+		this.height=toCopy.height;
+		this.width=toCopy.width;
+		this.stepStrategy=toCopy.stepStrategy.clone();
+		this.anim=new BufferedImage[toCopy.anim.length];
+		BufferedImage tmp;
+		for(int i=0; i<toCopy.anim.length; i++){
+			tmp=toCopy.anim[i];
+			this.anim[i] = tmp.getSubimage(0, 0, tmp.getWidth(), tmp.getHeight());
+		}
+	}
+
+	/**
+	 * 
 	 * @return
 	 */
 	public BufferedImage nextImage(){
@@ -62,10 +78,10 @@ public class Animation {
 				currentStep=0;
 			}
 		}
-		
+
 		return anim[currentStep];
 	}
-	
+
 	/**
 	 * 
 	 */
@@ -73,17 +89,17 @@ public class Animation {
 		if(other==null || other.getClass()!=this.getClass()){
 			return false;
 		}
-		
+
 		Animation otherAnim = (Animation)other;
-		
+
 		for(int i=0; i<anim.length; i++){
 			if(!this.anim[i].equals(otherAnim.anim[i])){
 				return false;
 			}
 		}
-		
+
 		return this.stepStrategy.equals(otherAnim.stepStrategy) && this.height==otherAnim.height
 				&& this.width==otherAnim.height;
-		
+
 	}
 }

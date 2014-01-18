@@ -49,6 +49,18 @@ public class Animations<Key> {
 	
 	/**
 	 * 
+	 * @param toCopy
+	 */
+	public Animations(Animations<Key> toCopy){
+		aniMap=new HashMap<>();
+		for(Key k: toCopy.aniMap.keySet()){
+			this.aniMap.put(k, new Animation(toCopy.aniMap.get(k)));
+		}
+		this.currentAnimation=toCopy.currentAnimation;
+	}
+	
+	/**
+	 * 
 	 * @param anim
 	 * @throws InvalidAnimationException
 	 */
@@ -107,8 +119,11 @@ public class Animations<Key> {
 	}
 	
 	/**
+	 * Deletes the specified Animation mapped to the given Key from this collection.
+	 * Returns a boolean value depending on if something was deleted or not.
 	 * 
-	 * @return
+	 * @author Max
+	 * @return True, if the Animation was found and deleted. False, if no Animation was found and therefore nothing deleted.
 	 */
 	public boolean removeAnimation(Animation anim){
 		boolean contained=false;
@@ -124,8 +139,11 @@ public class Animations<Key> {
 	}
 	
 	/**
+	 * Deletes the Animation mapped to the specified Key from this collection.
+	 * Returns a boolean value depending on if something was deleted or not.
 	 * 
-	 * @return
+	 * @author Max
+	 * @return True, if an Animation was found and deleted. False, if no Animation was found and therefore nothing deleted.
 	 */
 	public boolean removeAnimation(Key key){
 		boolean contained=false;
@@ -140,10 +158,39 @@ public class Animations<Key> {
 	}
 	
 	/**
+	 * Returns the currently active Animation.
 	 * 
-	 * @return
+	 * @return The currently active Animation. This can be changed with the switchAnimation(...) methods.
 	 */
 	public Animation getCurrentAnimation(){
 		return this.currentAnimation;
+	}
+	
+	/**
+	 * 
+	 * @param k
+	 * @return
+	 */
+	public Animation getAnimation(Key k){
+		return this.aniMap.get(k);
+	}
+	
+	/**
+	 * Returns a reference to an Animation in this collection which equals the specified Animation.
+	 * This can be used if a direct reference is needed.
+	 * 
+	 * @return The Animation in this collection which equals the specified Animation or null, if no such Animation could be found.
+	 */
+	public Animation getAnimation(Animation anim){
+		Animation tmp = null;
+		
+		for(Key k: this.aniMap.keySet()){
+			if(this.aniMap.get(k).equals(anim)){
+				tmp=this.aniMap.get(k);
+				break;
+			}
+		}
+		
+		return tmp;
 	}
 }

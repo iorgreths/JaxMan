@@ -15,4 +15,9 @@ public interface AnimationStrategy {
 	 * @return
 	 */
 	public boolean equals(Object other);
+	
+	/**
+	 * 
+	 */
+	public AnimationStrategy clone();
 }
