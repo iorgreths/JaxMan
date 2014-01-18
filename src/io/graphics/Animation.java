@@ -65,4 +65,25 @@ public class Animation {
 		
 		return anim[currentStep];
 	}
+	
+	/**
+	 * 
+	 */
+	public boolean equals(Object other){
+		if(other==null || other.getClass()!=this.getClass()){
+			return false;
+		}
+		
+		Animation otherAnim = (Animation)other;
+		
+		for(int i=0; i<anim.length; i++){
+			if(!this.anim[i].equals(otherAnim.anim[i])){
+				return false;
+			}
+		}
+		
+		return this.stepStrategy.equals(otherAnim.stepStrategy) && this.height==otherAnim.height
+				&& this.width==otherAnim.height;
+		
+	}
 }

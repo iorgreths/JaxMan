@@ -8,4 +8,11 @@ public interface AnimationStrategy {
 	 * @return
 	 */
 	public boolean isNextReady();
+	
+	/**
+	 * 
+	 * @param other
+	 * @return
+	 */
+	public boolean equals(Object other);
 }
