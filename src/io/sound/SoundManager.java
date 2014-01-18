@@ -1,4 +1,4 @@
-package IO.sound;
+package io.sound;
 
 import java.io.IOException;
 import java.util.HashMap;
