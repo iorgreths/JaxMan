@@ -39,6 +39,25 @@ public class Animation {
 		this.stepStrategy=strategy;
 		currentStep=0;
 	}
+	
+	/**
+	 * 
+	 * @param anim
+	 * @param animationSteps
+	 * @param strategy
+	 */
+	public Animation(BufferedImage anim, int animationSteps, AnimationStrategy strategy){
+		this(anim, 1, animationSteps, strategy);
+	}
+	
+	/**
+	 * This will create a new Animation with only 1 animation step, effectively making it a BufferedImage.
+	 * 
+	 * @param image The non-animated Image to be used.
+	 */
+	public Animation(BufferedImage image){
+		this(image, 1, 1, null);
+	}
 
 	/**
 	 * 
@@ -81,7 +100,7 @@ public class Animation {
 
 		return anim[currentStep];
 	}
-
+	
 	/**
 	 * 
 	 */
