@@ -9,7 +9,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * This Class represents the BackgroundMusic. <br/>
  * It is a SoundClip which is indefinitely played, until stopped. <br/>
  * Because of it's nature it's highly discouraged to use this class <br/>
- * outside of another thread (resulting in an infity loop).
+ * outside of another thread (resulting in an infinite loop).
  * 
  * @author Iorgreths
  * @version 1.0

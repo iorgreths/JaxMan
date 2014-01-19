@@ -108,10 +108,5 @@ public class SoundClip {
 			ioe.printStackTrace();
 			
 		}
-		
 	}
-	
-	
-	
-	
 }

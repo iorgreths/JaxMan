@@ -30,54 +30,75 @@ public class ImageLoader {
 		}
 		return instance;
 	}
-
+	
 	/**
 	 * 
 	 * @param name
 	 * @param pathPrefix
 	 * @param loadAsResource
 	 * @return
+	 */
+	public BufferedImage getImage(String name){
+		return imageMap.get(name);
+	}
+
+	/**
+	 * 
+	 * @param name
+	 * @return
+	 */
+	public boolean hasImage(String name){
+		return imageMap.get(name)!=null;
+	}
+	
+	/**
+	 * 
+	 * @param name
+	 * @param folder
+	 * @param path
+	 * @return
 	 * @throws IOException
 	 */
-	public BufferedImage getImage(String name, String pathPrefix, boolean loadAsResource) throws IOException{
-		BufferedImage tmp = imageMap.get(name);
-
-		if(tmp==null){
-			if(!pathPrefix.endsWith("/")&&!pathPrefix.endsWith("\\")){
-				pathPrefix+="/";
-			}
-			String path = pathPrefix+name;
-
-			if(loadAsResource){
-				//TODO
-				// is that even correct?
-				tmp=ImageIO.read(ImageLoader.class.getResourceAsStream(path));
-			}else{
-				tmp = ImageIO.read(new File(URI.create(path)));
-			}
+	public BufferedImage loadImage(String name, String folder, String path) throws IOException{
+		if(path!=null&&!path.equals("")&&!path.endsWith("/")&&!path.endsWith("\\")){
+			path+="/";
+		}else if(path==null||path.equals("")){
+			// TODO
+			// does that do the trick?
+			// : if engine is in other JAR file...?
+			path=ImageLoader.class.getProtectionDomain().getCodeSource().getLocation().toString();
+			path=path.substring(0, path.lastIndexOf("/"))+"/";
 		}
-
+		
+		if(folder==null){
+			folder="";
+		}
+		
+		String filePath = path+folder+name;
+		System.out.println(filePath);
+		BufferedImage tmp = ImageIO.read(new File(URI.create(filePath)));
+		imageMap.put(name, tmp);
 		return tmp;
 	}
-
+	
 	/**
 	 * 
 	 * @param name
-	 * @param pathPrefix
-	 * @return
-	 * @throws IOException
+	 * @param folder
+	 * @throws IOException 
 	 */
-	public BufferedImage getImage(String name, String pathPrefix) throws IOException{
-		return this.getImage(name, pathPrefix, false);
+	public BufferedImage loadImage(String name, String folder) throws IOException{
+		return loadImage(name, folder, null);
 	}
-
+	
 	/**
 	 * 
 	 * @param name
 	 * @return
 	 * @throws IOException
 	 */
-	public BufferedImage getImage(String name) throws IOException{
-		return this.getImage(name, this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath(), true);
+	public BufferedImage loadImage(String name) throws IOException{
+		return loadImage(name, null, null);
 	}
+
 }
