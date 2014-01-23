@@ -7,118 +7,6 @@ import java.util.Map;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
-/**
- * An internal class of SoundManager <br/>
- * It represents the Thread, which plays the BackgroundMusic of the game.
- * 
- * @author Iorgreths
- * @version 1.0
- */
-class BGM_Thread extends Thread{
-	
-	private BGM bgm; // The BGM to be played
-	
-	/**
-	 * Creates a new BGM_Thread with a specified BGM file, <br/>
-	 * which shall be played.
-	 * 
-	 * @param bgm - The BackgroundMusic to be played
-	 */
-	public BGM_Thread(BGM bgm){
-		
-		this.bgm = bgm;
-		
-	}
-	
-	/**
-	 * Starts the thread
-	 */
-	public void run(){
-		
-		try {
-			
-			bgm.play();
-			
-		} catch (LineUnavailableException e) {
-			
-			e.printStackTrace();
-			
-		}
-		
-	}
-	
-}
-
-/**
- * An internal class of SoundManager <br/>
- * It represents the Thread, which plays the SoundEffects of the game.
- * 
- * @author Iorgreths
- * @version 1.0
- *
- */
-class SoundEffect_Thread extends Thread{
-	
-	private SoundClip sound; // The Sound to be played
-	
-	/**
-	 * Creates a new SoundEffect_Thread, with a specified SoundClip.
-	 * @param sound - The SoundClip, which can be played
-	 */
-	public SoundEffect_Thread(SoundClip sound){
-		
-		this.sound = sound;
-		
-	}
-	
-	/**
-	 * Plays a SoundEffect, if sound is not empty
-	 */
-	public void run(){
-		
-		if(sound != null){
-			
-			this.playEffect();
-			
-		}
-		
-	}
-	
-	/*
-	 * actually plays the SoundClip
-	 * INTERNAL METHOD
-	 */
-	private void playEffect(){
-		
-		try {
-			
-			sound.play();
-			
-		} catch (LineUnavailableException e) {
-			
-			e.printStackTrace();
-			
-		}
-		
-	}
-	
-	/**
-	 * Replaces the current SoundClip with a new one and plays it.<br/>
-	 * The SoundClip will not be swapped if the new one is empty
-	 * @param sound - The new SoundClip
-	 */
-	public void changeSoundEffect(SoundClip sound){
-		
-		if(sound != null){
-			
-			this.sound = sound;
-			this.playEffect();
-			
-		}
-		
-	}
-	
-}
 
 /**
  * The SoundManager manages the BackgroundMusic, as well as the SoundEffect of the game. <br/>
@@ -127,14 +15,13 @@ class SoundEffect_Thread extends Thread{
  * It is always possible to further add SoundEffects.
  * 
  * @author Iorgreths
- * @version 1.0
+ * @version 1.1
  */
 public class SoundManager {
 
-	private BGM bgm; // The current BGM
-	private BGM_Thread bgthread; // The Thread, which plays the BGM 
-	private SoundEffect_Thread sethread; // The Thread, which plays SoundEffects
 	private Map<String, SoundClip> sound_effects; // All SoundEffects of the game
+	private BGMThread bgmthread; // The thread working the background music
+	private SoundEffectsThread soundeff; // The thread working the SoundEffects
 	
 	/**
 	 * Creates a new SoundManager, without SoundEffects and BGM
@@ -142,10 +29,9 @@ public class SoundManager {
 	public SoundManager(){
 		super();
 		
-		bgm = null;
-		bgthread = null;
-		sethread = null;
 		sound_effects = new HashMap<String, SoundClip>();
+		bgmthread = new BGMThread();
+		soundeff = new SoundEffectsThread();
 		
 	}
 	
@@ -153,20 +39,23 @@ public class SoundManager {
 	 * HotSwaps the current BGM with another file and plays the new file in a loop. <br/>
 	 * Throws an Error if the new Path is not legit or the Format of the new file is not supported.
 	 * @param filepath - The path to the new AudioFile
-	 * @throws IOException 
-	 * @throws UnsupportedAudioFileException 
+	 * @throws IOException - Unable to read from file (maybe locked or deleted)
+	 * @throws UnsupportedAudioFileException - Unsupported format of the AudioFile (e.g. .ogg)
+	 * @throws LineUnavailableException - No further AudioLines available
 	 */
-	public void changeBGM(String filepath) throws UnsupportedAudioFileException, IOException{
+	public void changeBGM(String filepath) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
 		
-		if(bgm != null){
-			
-			bgm.stop();
-			
-		}
-			
-		bgm = new BGM(filepath);
-		bgthread = new BGM_Thread(bgm);
-		bgthread.run();
+		bgmthread.setMusic(new BGM(filepath));
+		bgmthread.run();
+		
+	}
+	
+	/**
+	 * Stops the BackgroundMusic from playing.
+	 */
+	public void stopBackgroundMusic(){
+		
+		bgmthread.ceasePlaying();
 		
 	}
 	
@@ -177,10 +66,11 @@ public class SoundManager {
 	 * Throws an error, if the filepath is not legit or the Format of the AudioFile is not supported.
 	 * @param identifier - The Name of the SoundEffect, through which it shall be accessible
 	 * @param filepath - The Path to the AudioFile
-	 * @throws UnsupportedAudioFileException
-	 * @throws IOException
+	 * @throws UnsupportedAudioFileException - Unsupported format of the AudioFile (e.g. .ogg)
+	 * @throws IOException - Unable to read from file (maybe locked or deleted)
+	 * @throws LineUnavailableException  - No further line available for playing sounds
 	 */
-	public void addSoundEffect(String identifier, String filepath) throws UnsupportedAudioFileException, IOException{
+	public void addSoundEffect(String identifier, String filepath) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
 		
 		sound_effects.put(identifier, new SoundClip(filepath));
 		
@@ -192,20 +82,12 @@ public class SoundManager {
 	 * <br/>
 	 * Throws an exception if there is no free AudioLine.
 	 * @param identifier - The Name of the SoundEffect, to be played
-	 * @throws LineUnavailableException
+	 * @throws LineUnavailableException - No further line available for playing sounds.
 	 */
 	public void playSound(String identifier) throws LineUnavailableException{
 		
-		if(sethread != null){
-			
-			sethread.changeSoundEffect(sound_effects.get(identifier));
-			
-		}else{
-			
-			sethread = new SoundEffect_Thread(sound_effects.get(identifier));
-			sethread.run();
-			
-		}
+		soundeff.setSoundEffect(sound_effects.get(identifier));
+		soundeff.run();
 		
 	}
 	
