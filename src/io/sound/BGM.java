@@ -2,8 +2,6 @@ package io.sound;
 
 import java.io.IOException;
 
-import javax.sound.sampled.LineEvent;
-import javax.sound.sampled.LineListener;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
@@ -14,10 +12,10 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * 
  * 
  * @author Iorgreths
- * @version 1.2
+ * @version 1.3
  *
  */
-class BGM implements LineListener{
+class BGM{
 
 	private SoundClip sound; // The SoundClip which shall be played
 	private boolean looping; // Playes the clip until looping = false
@@ -37,7 +35,6 @@ class BGM implements LineListener{
 		
 		looping = true;
 		sound = new SoundClip(filepath);
-		sound.addLineListener(this);
 		
 	}
 	
@@ -53,56 +50,35 @@ class BGM implements LineListener{
 	}
 	
 	/**
-	 * The start of the play-cicle. <br/>
-	 * It has only to be called once, since afterwards everything will be handled via Notifications. <br/>
-	 * If the line is already playing this method does nothing.
+	 * Starts playing the music. <br/>
+	 * The music will be played until stopped. <br/>
+	 * Because of it's nature it's highly recommended not too use this method within the main-Thread.
 	 *
-	 * @throws LineUnavailableException
-	 * @throws IOException 
+	 * @throws LineUnavailableException  - no further AudioLines available
+	 * @throws IOException - Unable to read from file (changed dir?, deleted?, locked?)
+	 * @throws UnsupportedAudioFileException - Unsupported format of audio file (e.g. .ogg)
 	 */
-	public void play() throws LineUnavailableException, IOException{
+	public void play() throws LineUnavailableException, IOException, UnsupportedAudioFileException{
 		
-		if(!sound.isLinePlaying()){
+		while (looping){
 			
 			sound.play();
 			
 		}
 		
 	}
-
+	
 	/**
-	 * NOTICE!: This method is not supposed to be called from the CLIENT.
-	 * 
-	 * Every time the state of the line changes this method is called. <br/>
-	 * If the BGM is supposed to still loop this method will invoke another playback.
-	 * 
+	 * Sets the volume for the line (in dB). <br/>
+	 * <br/>
+	 * The volume on the line is between: <br/>
+	 * -80dB - 6.0206dB <br/>
+	 * If the parameter is out of this range it will be adjusted to minimum  or maximum, whichever is closer.
+	 * @param volume - The volume on the line in dB ( between -80 and 6.0206 )
 	 */
-	@Override
-	public void update(LineEvent event) {
+	public void setVolume(float volume){
 		
-		System.out.println(event.getType());
-		
-		if(looping){
-			
-			if(event.getType() == LineEvent.Type.STOP){
-				
-				try {
-					
-					sound.play();
-					
-				} catch (LineUnavailableException e) {
-					
-					e.printStackTrace();
-					
-				} catch (IOException e) {
-		
-					e.printStackTrace();
-					
-				}
-				
-			}
-			
-		}
+		sound.setVolume(volume);
 		
 	}
 	

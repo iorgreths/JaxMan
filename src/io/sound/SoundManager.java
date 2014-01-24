@@ -15,7 +15,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * It is always possible to further add SoundEffects.
  * 
  * @author Iorgreths
- * @version 1.1
+ * @version 1.2
  */
 public class SoundManager {
 
@@ -46,7 +46,26 @@ public class SoundManager {
 	public void changeBGM(String filepath) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
 		
 		bgmthread.setMusic(new BGM(filepath));
-		bgmthread.run();
+		Thread bgm = new Thread(bgmthread);
+		bgm.start();
+		
+	}
+	
+	/**
+	 * HotSwaps the current BGM with another file and plays the new file in a loop. <br/>
+	 * Throws an Error if the new Path is not legit or the Format of the new file is not supported.
+	 * @param filepath - The path to the new AudioFile
+	 * @param volume - The volume to use, in dB ( between -80 and 6.0206 )
+	 * @throws IOException - Unable to read from file (maybe locked or deleted)
+	 * @throws UnsupportedAudioFileException - Unsupported format of the AudioFile (e.g. .ogg)
+	 * @throws LineUnavailableException - No further AudioLines available
+	 */
+	public void changeBGM(String filepath, float volume) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
+		
+		bgmthread.setMusic(new BGM(filepath));
+		bgmthread.setVolume(volume);
+		Thread bgm = new Thread(bgmthread);
+		bgm.start();
 		
 	}
 	
@@ -77,6 +96,26 @@ public class SoundManager {
 	}
 	
 	/**
+	 * Adds a new SoundEffect to the current list. <br/>
+	 * Maps the new SoundEffect to a specific name = idenfitier <br/>
+	 * The SoundEffect is a AudioFile located locally at the computer <br/>
+	 * Throws an error, if the filepath is not legit or the Format of the AudioFile is not supported.
+	 * @param identifier - The Name of the SoundEffect, through which it shall be accessible
+	 * @param filepath - The Path to the AudioFile
+	 * @param volume - The volume to use, in dB ( between -80 and 6.0206 )
+	 * @throws UnsupportedAudioFileException - Unsupported format of the AudioFile (e.g. .ogg)
+	 * @throws IOException - Unable to read from file (maybe locked or deleted)
+	 * @throws LineUnavailableException  - No further line available for playing sounds
+	 */
+	public void addSoundEffect(String identifier, String filepath, float volume) throws UnsupportedAudioFileException, IOException, LineUnavailableException{
+		SoundClip clip = new SoundClip(filepath);
+		clip.setVolume(volume);
+		sound_effects.put(identifier, clip);
+		clip = null;
+		
+	}
+	
+	/**
 	 * Play the SoundEffect, which is behind the Name (identifier). <br/>
 	 * If no SoundEffect matches the name, nothing is played. <br/>
 	 * <br/>
@@ -87,7 +126,8 @@ public class SoundManager {
 	public void playSound(String identifier) throws LineUnavailableException{
 		
 		soundeff.setSoundEffect(sound_effects.get(identifier));
-		soundeff.run();
+		Thread effect = new Thread(soundeff);
+		effect.run();
 		
 	}
 	

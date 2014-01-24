@@ -3,15 +3,16 @@ package io.sound;
 import java.io.IOException;
 
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * Represents the thread which plays SoundEffects.
  * 
  * @author Iorgreths
- * @version 1.0
+ * @version 1.1
  *
  */
-class SoundEffectsThread extends Thread {
+class SoundEffectsThread implements Runnable {
 
 	private SoundClip sound; // The sound to be played
 	
@@ -39,6 +40,7 @@ class SoundEffectsThread extends Thread {
 	 * If this thread has a SoundEffect != null, <br/>
 	 * The SoundEffect will be played (once).
 	 */
+	@Override
 	public void run(){
 		
 		if(sound != null){
@@ -55,6 +57,9 @@ class SoundEffectsThread extends Thread {
 				
 				e.printStackTrace();
 				
+			} catch (UnsupportedAudioFileException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			
 		}

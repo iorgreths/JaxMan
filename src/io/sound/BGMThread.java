@@ -3,16 +3,17 @@ package io.sound;
 import java.io.IOException;
 
 import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 
 /**
  * 
  * This class represents the thread, which plays the BackgroundMusic.
  * 
  * @author Iorgreths
- * @version 1.0
+ * @version 1.1
  *
  */
-class BGMThread extends Thread {
+class BGMThread implements Runnable {
 
 	private BGM music;
 	
@@ -60,10 +61,25 @@ class BGMThread extends Thread {
 	}
 	
 	/**
+	 * Sets the volume for the line (in dB). <br/>
+	 * <br/>
+	 * The volume on the line is between: <br/>
+	 * -80dB - 6.0206dB <br/>
+	 * If the parameter is out of this range it will be adjusted to minimum  or maximum, whichever is closer.
+	 * @param volume - The volume on the line in dB ( between -80 and 6.0206 )
+	 */
+	public void setVolume(float volume){
+		
+		music.setVolume(volume);
+		
+	}
+
+	/**
 	 * If this thread has a music != null,
 	 * it initializes the BGM.
 	 */
-	public void run(){
+	@Override
+	public void run() {
 		
 		if(music != null){
 			
@@ -79,10 +95,16 @@ class BGMThread extends Thread {
 				
 				e.printStackTrace();
 				
+			} catch (UnsupportedAudioFileException e) {
+				
+				e.printStackTrace();
+				
 			}
 			
 		}
 		
 	}
+	
+
 	
 }
