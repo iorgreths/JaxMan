@@ -18,8 +18,8 @@ public class Animation {
 	 * @param strategy
 	 */
 	public Animation(BufferedImage anim, int rows, int columns, AnimationStrategy strategy){
-		if(rows==0 || columns==0){
-			throw new IllegalArgumentException("Columns and Rows must not be equal to 0!");
+		if(rows<=0 || columns<=0){
+			throw new IllegalArgumentException("Columns and Rows must not be <= 0!");
 		}
 
 		this.height=anim.getHeight()/rows;
@@ -32,12 +32,13 @@ public class Animation {
 		this.anim=new BufferedImage[rows*columns];
 		for(int i=0; i<rows; i++){
 			for(int j=0; j<columns; j++){
-				this.anim[i*rows+j] = anim.getSubimage(j*width, i*height, (j+1)*width, (j+1)*height);
+				this.anim[i*rows+j] = anim.getSubimage(j*width, i*height, width, height);
 			}
 		}
 
 		this.stepStrategy=strategy;
 		currentStep=0;
+		
 	}
 	
 	/**
@@ -83,17 +84,15 @@ public class Animation {
 
 		if(stepStrategy!=null){
 			if(stepStrategy.isNextReady()){
-				if(currentStep<anim.length){
-					currentStep++;
-				}else{
+				currentStep++;
+				if(currentStep>=anim.length){
 					currentStep=0;
 				}
 			}
 		}else{
-
-			if(currentStep<anim.length){
-				currentStep++;
-			}else{
+			
+			currentStep++;
+			if(currentStep>=anim.length){
 				currentStep=0;
 			}
 		}
