@@ -15,7 +15,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * It is always possible to further add SoundEffects.
  * 
  * @author Iorgreths
- * @version 1.2
+ * @version 1.3
  */
 public class SoundManager {
 
@@ -127,7 +127,7 @@ public class SoundManager {
 		
 		soundeff.setSoundEffect(sound_effects.get(identifier));
 		Thread effect = new Thread(soundeff);
-		effect.run();
+		effect.start();
 		
 	}
 	
