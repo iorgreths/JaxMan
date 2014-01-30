@@ -211,4 +211,17 @@ public class Options {
 		
 	}
 	
+	/**
+	 * Saves the list of options onto the hard drive of the computer. <br7>
+	 * No error is reported if the attempt fails
+	 */
+	public void savePropertiesOnHardDrive(){
+		
+		PropertiesManager.getInstance().saveChangedOptions(option);
+		PropertiesManager.getInstance().saveChangedPlayerProperties(player);
+		
+	}
+	
+	// TODO SET PROPERTIES
+	
 }
