@@ -212,7 +212,7 @@ public class Options {
 	}
 	
 	/**
-	 * Saves the list of options onto the hard drive of the computer. <br7>
+	 * Saves the list of options onto the hard drive of the computer. <br/>
 	 * No error is reported if the attempt fails
 	 */
 	public void savePropertiesOnHardDrive(){
@@ -222,6 +222,131 @@ public class Options {
 		
 	}
 	
-	// TODO SET PROPERTIES
+	/**
+	 * Sets the name for the player identified throught the pindex ( 1 <= pindex <= 4 )
+	 * @param pindex - The index of the player ( 1 <= pindex <= 4 )
+	 * @param name - The new name of the player
+	 */
+	public void setPlayerIName(int pindex, String name){
+		
+		// only 4 players
+		if( 1<= pindex && pindex <=4){
+			
+			player.setProperty("p"+pindex+"name", name);
+			
+		}
+		
+	}
+	
+	/**
+	 * Sets the controls for the player identified through the pindex. <br/>
+	 * 1 <= pindex <= 4 ( = 4 Players ) <br/>
+	 * controls format: int[5] ( CONTROL UP, CONTROL DOWN, CONTROL LEFT, CONTROL RIGHT, CONTROL ACTIVE )
+	 * @param pindex - The index of the player ( 1<= pindex <= 4 )
+	 * @param controls - The new controls of the player in the format: int[5] ( CONTROL UP, CONTROL DOWN, CONTROL LEFT, CONTROL RIGHT, CONTROL ACTIVE )
+	 */
+	public void setControlPattern(int pindex, int[] controls){
+		
+		if( 1 <= pindex && pindex <= 4){
+			
+			if(controls.length >= 5){
+				
+				player.setProperty("p"+pindex+"up", String.valueOf(controls[0]));
+				player.setProperty("p"+pindex+"down", String.valueOf(controls[1]));
+				player.setProperty("p"+pindex+"left", String.valueOf(controls[2]));
+				player.setProperty("p"+pindex+"down", String.valueOf(controls[3]));
+				player.setProperty("p"+pindex+"active", String.valueOf(controls[4]));
+				
+			}
+			
+		}
+		
+	}
+	
+	/**
+	 * Sets whether or not the programm shall be executed in fullscreen mode
+	 * @param isfullscreen - Fullscreen mode activated?
+	 */
+	public void setFullscreen(boolean isfullscreen){
+		
+		option.setProperty("fullscreen", String.valueOf(isfullscreen));
+		
+	}
+	
+	/**
+	 * Seth whether or not the power-ups shall spawn during the game (must be defined at server location)
+	 * @param powerupallowed - Spawn power ups?
+	 */
+	public void setPowerUps(boolean powerupallowed){
+		
+		option.setProperty("power-ups", String.valueOf(powerupallowed));
+		
+	}
+	
+	/**
+	 * Sets the resolution of the window
+	 * @param width - The width of the resolution in pixel
+	 * @param height - The height of the resolution in pixel
+	 */
+	public void setResolution(int width, int height){
+		
+		option.setProperty("resolution", width+"x"+height);
+		
+	}
+	
+	/**
+	 * Sets the volume of the background music
+	 * @param volume - new volume of the bgm
+	 */
+	public void setBGMVolume(double volume){
+		double set = volume;
+		
+		if(volume > 6.0206){
+			
+			set = 6.0206;
+			
+		}
+		
+		option.setProperty("volume", String.valueOf(set));
+		
+	}
+	
+	/**
+	 * Sets the volume of the sound effect clips
+	 * @param volume - new volume of the sound effect clips
+	 */
+	public void setSoundEffectsVolume(double volume){
+		
+		double set = volume;
+		
+		if(volume > 6.0206){
+			
+			set = 6.0206;
+			
+		}
+		
+		option.setProperty("soundeffect", String.valueOf(set));
+		
+	}
+	
+	/**
+	 * Sets the boardsize of the game (must be done at server location) <br/>
+	 * 3 sizes:
+	 * <ul>
+	 * <li>small </li>
+	 * <li>medium </li>
+	 * <li>large </li>
+	 * </ul>
+	 * @param size - the new size of the game board (small/medium/large)
+	 */
+	public void setBoardSize(String size){
+		
+		if( size.equals("small") || size.equals("medium") || size.equals("large")){
+			
+			option.setProperty("boardsize", size);
+			
+		}
+		
+	}
 	
 }
