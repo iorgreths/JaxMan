@@ -9,7 +9,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * Represents the thread which plays SoundEffects.
  * 
  * @author Iorgreths
- * @version 1.1
+ * @version 1.2
  *
  */
 class SoundEffectsThread implements Runnable {
@@ -37,6 +37,16 @@ class SoundEffectsThread implements Runnable {
 	}
 	
 	/**
+	 * Returns true if the instance of this class is currently busy playing a sound file
+	 * @return Whether a sound file is currently playing or not
+	 */
+	public boolean threadBusy(){
+		
+		return sound.isLinePlaying();
+		
+	}
+	
+	/**
 	 * If this thread has a SoundEffect != null, <br/>
 	 * The SoundEffect will be played (once).
 	 */
@@ -58,7 +68,7 @@ class SoundEffectsThread implements Runnable {
 				e.printStackTrace();
 				
 			} catch (UnsupportedAudioFileException e) {
-				// TODO Auto-generated catch block
+				
 				e.printStackTrace();
 			}
 			
