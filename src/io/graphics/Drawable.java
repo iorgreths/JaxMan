@@ -2,37 +2,37 @@ package io.graphics;
 
 import java.awt.Graphics;
 
-public abstract class Drawable {
+public interface Drawable {
 
-	protected Animations<String> animations;
-	protected int xPos, yPos;
-	
 	/**
 	 * 
 	 * @param g
 	 */
-	public abstract void draw(Graphics g);
+	public void draw(Graphics g);
+
+	/**
+	 * 
+	 * @param g
+	 * @param scale
+	 */
+	public void draw(Graphics g, float scale);
 	
 	/**
 	 * 
 	 * @return
 	 */
-	public int getX(){
-		return this.xPos;
-	}
+	public int getX();
 	
 	/**
 	 * 
 	 * @return
 	 */
-	public int getY(){
-		return this.yPos;
-	}
+	public int getY();
 	
 	/**
 	 * 
 	 * @param dx
 	 * @param dy
 	 */
-	public abstract void move(int dx, int dy);
+	public void move(int dx, int dy);
 }
