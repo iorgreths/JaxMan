@@ -2,6 +2,10 @@ package io.graphics;
 
 import java.awt.Graphics;
 
+/**
+ * 
+ * @author Maxmanski
+ */
 public interface Drawable {
 
 	/**
@@ -18,6 +22,7 @@ public interface Drawable {
 	public void draw(Graphics g, float scale);
 	
 	/**
+	 * Has to return the Drawable's X coordinate on a 2D plain.
 	 * 
 	 * @return
 	 */

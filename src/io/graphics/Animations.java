@@ -3,17 +3,27 @@ package io.graphics;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * 
+ * @author Maxmanski
+ *
+ * @param <Key>
+ */
 public class Animations<Key> {
 
 	private HashMap<Key, Animation> aniMap;
 	private Animation currentAnimation;
 	
 	/**
+	 * Creates a new collection of Animations, which is a container where objects of the type Animation can be
+	 * stored and identified by specific sets of Key elements, much like a HashMap.<br>
+	 * Both arrays have to be equal in size and must contain at least one element.<br>
+	 * The first contained Animation object will be selected as the active Animation initially.
 	 * 
-	 * 
-	 * @author Maxmanski
-	 * @param animations
-	 * @param keySet
+	 * @param animations The Animation objects to be stored initially
+	 * @param keySet The Key elements which should identify the initial set of Animations. Note that the
+	 * 				positioning in the animations and keySet arrays determine which Key should be mapped to which
+	 * 				Animation.
 	 */
 	public Animations(Animation[] animations, Key[] keySet){
 		if(animations.length!=keySet.length){
@@ -30,10 +40,15 @@ public class Animations<Key> {
 	}
 	
 	/**
+	 * Creates a new collection of Animations, which is a container where objects of the type Animation can be
+	 * stored and identified by specific sets of Key elements, much like a HashMap.<br>
+	 * Both lists have to be equal in size and must contain at least one element.<br>
+	 * The first contained Animation object will be selected as the active Animation initially.
 	 * 
-	 * @author Maxmanski
-	 * @param animations
-	 * @param keySet
+	 * @param animations The Animation objects to be stored initially
+	 * @param keySet The Key elements which should identify the initial set of Animations. Note that the
+	 * 				positioning in the animations and keySet lists determine which Key should be mapped to which
+	 * 				Animation.
 	 */
 	public Animations(List<Animation> animations, List<Key> keySet){
 		if(animations.size()!=keySet.size()){
@@ -51,11 +66,15 @@ public class Animations<Key> {
 	}
 	
 	/**
+	 * Creates a deep copy of the specified Animations collection.<br>
+	 * The specified Animations object cannot be a NULL reference.
 	 * 
-	 * @author Maxmanski
-	 * @param toCopy
+	 * @param toCopy The Animations collection of which a deep copy should be created
 	 */
 	public Animations(Animations<Key> toCopy){
+		if(toCopy==null){
+			throw new IllegalArgumentException("The Animations object to be copied cannot be null");
+		}
 		aniMap=new HashMap<>();
 		for(Key k: toCopy.aniMap.keySet()){
 			this.aniMap.put(k, new Animation(toCopy.aniMap.get(k)));
@@ -64,10 +83,13 @@ public class Animations<Key> {
 	}
 	
 	/**
+	 * Switches the currently active Animation to the first Animation object contained by this
+	 * Animations object which equals the specified Animation.<br>
+	 * The selected Animation will be reset.<br>
+	 * If no equal element can be found, an Exception will be thrown.
 	 * 
-	 * @author Maxmanski
-	 * @param anim
-	 * @throws InvalidAnimationException
+	 * @param anim The Animation of which an equal instance should be used as currently active Animation
+	 * @throws InvalidAnimationException Thrown, if either anim is a NULL reference or no equal Animation can be found
 	 */
 	public void switchAnimation(Animation anim)throws InvalidAnimationException{
 		if(anim==null){
@@ -84,15 +106,18 @@ public class Animations<Key> {
 		if(tmp==null){
 			throw new InvalidAnimationException("The specified Animation could not be found");
 		}else{
+			tmp.reset();
 			this.currentAnimation=tmp;
 		}
 	}
 	
 	/**
+	 * Switches the currently active Animation to an Animation in this collection which is identified
+	 * by the specified key.<br>
+	 * If there is no Animation contained by the specified key, an InvalidAnimationException will be thrown.
 	 * 
-	 * @author Maxmanski
-	 * @param key
-	 * @throws InvalidAnimationException
+	 * @param key The key that identifies the new to-be currently active Animation
+	 * @throws InvalidAnimationException Will be thrown if the specified key does not identify any of the contained Animation objects.
 	 */
 	public void switchAnimation(Key key) throws InvalidAnimationException{
 		Animation tmp = null;
@@ -107,12 +132,12 @@ public class Animations<Key> {
 	}
 	
 	/**
+	 * Adds anim to the collection and sets its identifier to key.<br>
+	 * If there is already an Animation in the collection being identified by key, the old Animation will be overridden.
 	 * 
-	 * 
-	 * @author Maxmanski
 	 * @param anim The Animation to be added to the collection.
-	 * @param key The Key element to be used for identifying the specified Animation. If this Key element already identifies another Animation, the old Animation will be overridden.
-	 * @return TRUE, if the call of this method has defined a new Animation. FALSE, if the old Animation for the specified Key has been overridden.
+	 * @param key The Key element to be used for identifying the specified Animation.
+	 * @return TRUE, if the call of this method has defined a new Animation. FALSE, if an Animation has been overridden.
 	 */
 	public boolean putAnimation(Animation anim, Key key){
 		boolean newKey=true;
@@ -130,7 +155,6 @@ public class Animations<Key> {
 	 * Deletes the specified Animation mapped to the given Key from this collection.
 	 * Returns a boolean value depending on if something was deleted or not.
 	 * 
-	 * @author Maxmanski
 	 * @return True, if the Animation was found and deleted. False, if no Animation was found and therefore nothing deleted.
 	 */
 	public boolean removeAnimation(Animation anim){
@@ -150,7 +174,6 @@ public class Animations<Key> {
 	 * Deletes the Animation mapped to the specified Key from this collection.
 	 * Returns a boolean value depending on if something was deleted or not.
 	 * 
-	 * @author Maxmanski
 	 * @return TRUE, if an Animation was found and deleted. FALSE, if no Animation was found and therefore nothing deleted.
 	 */
 	public boolean removeAnimation(Key key){
@@ -168,7 +191,6 @@ public class Animations<Key> {
 	/**
 	 * Returns the currently active Animation.
 	 * 
-	 * @author Maxmanski
 	 * @return The currently active Animation. This can be changed with the switchAnimation methods.
 	 */
 	public Animation getCurrentAnimation(){
@@ -178,7 +200,6 @@ public class Animations<Key> {
 	/**
 	 * Returns the Animation for the specified Key element.
 	 * 
-	 * @author Maxmanski
 	 * @param k The Key element, for which the corresponding Animation should be returned
 	 * @return The Animation corresponding to the specified Key element or NULL, if no corresponding Animation exists.
 	 */
@@ -190,7 +211,6 @@ public class Animations<Key> {
 	 * Returns a reference to an Animation in this collection which equals the specified Animation.
 	 * This can be used if a direct reference is needed.
 	 * 
-	 * @author Maxmanski
 	 * @return The Animation in this collection which equals the specified Animation or null, if no such Animation could be found.
 	 */
 	public Animation getAnimation(Animation anim){

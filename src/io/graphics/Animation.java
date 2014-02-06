@@ -2,6 +2,11 @@ package io.graphics;
 
 import java.awt.image.BufferedImage;
 
+/**
+ * 
+ * @author Maxmanski
+ *
+ */
 public class Animation {
 
 	private final BufferedImage[] anim;
@@ -27,7 +32,6 @@ public class Animation {
 	 * animation steps (subimages) the source image should be divided.<br>
 	 * Note that every of these subimages has to be used and none can be left out.
 	 * 
-	 * @author Maxmanski
 	 * @param anim The source Image from which the animation steps should be extracted
 	 * @param rows Determines into how many rows of subimages the source image should be divided.
 	 * @param columns Determines into how many columns of subimages the source image should be divided.
@@ -71,7 +75,6 @@ public class Animation {
 	 * Note that the amount of animationSteps has to be at least 1<br>
 	 * The AnimationStrategy is handled the same way as in the constructor Animation(BufferedImage anim, int rows, int columns, AnimationStrategy strategy).
 	 *
-	 * @author Maxmanski
 	 * @param anim The source image
 	 * @param animationSteps The amount of subimages in the source image, which should be used as animation steps
 	 * @param strategy Specifies the AnimationStrategy used to determine when the next animation step should be returned by the nextImage method
@@ -84,7 +87,6 @@ public class Animation {
 	/**
 	 * This will create a new Animation with only 1 animation step, effectively making it a BufferedImage.
 	 * 
-	 * @author Maxmanski
 	 * @param image The non-animated Image to be used.
 	 */
 	public Animation(BufferedImage image){
@@ -94,7 +96,6 @@ public class Animation {
 	/**
 	 * Creates a deep copy of the specified Animation.
 	 * 
-	 * @author Maxmanski
 	 * @param toCopy
 	 */
 	public Animation(Animation toCopy){
@@ -107,6 +108,7 @@ public class Animation {
 			tmp=toCopy.anim[i];
 			this.anim[i] = tmp.getSubimage(0, 0, tmp.getWidth(), tmp.getHeight());
 		}
+		this.hasEnded=false;
 	}
 
 	/**
@@ -165,11 +167,18 @@ public class Animation {
 	/**
 	 * Checks if the Animation has reached its final animation step at least.
 	 * 
-	 * @author Maxmanski
 	 * @return TRUE, if this Animation has reached its end at least once.
 	 * 			FALSE otherwise.
 	 */
 	public boolean hasEnded(){
 		return this.hasEnded;
+	}
+	
+	/**
+	 * Resets the Animation and its hasEnded property.
+	 */
+	public void reset(){
+		this.currentStep=0;
+		this.hasEnded=false;
 	}
 }
