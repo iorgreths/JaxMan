@@ -10,6 +10,8 @@ public class Animations<Key> {
 	
 	/**
 	 * 
+	 * 
+	 * @author Maxmanski
 	 * @param animations
 	 * @param keySet
 	 */
@@ -29,6 +31,7 @@ public class Animations<Key> {
 	
 	/**
 	 * 
+	 * @author Maxmanski
 	 * @param animations
 	 * @param keySet
 	 */
@@ -49,6 +52,7 @@ public class Animations<Key> {
 	
 	/**
 	 * 
+	 * @author Maxmanski
 	 * @param toCopy
 	 */
 	public Animations(Animations<Key> toCopy){
@@ -61,6 +65,7 @@ public class Animations<Key> {
 	
 	/**
 	 * 
+	 * @author Maxmanski
 	 * @param anim
 	 * @throws InvalidAnimationException
 	 */
@@ -85,6 +90,7 @@ public class Animations<Key> {
 	
 	/**
 	 * 
+	 * @author Maxmanski
 	 * @param key
 	 * @throws InvalidAnimationException
 	 */
@@ -102,9 +108,11 @@ public class Animations<Key> {
 	
 	/**
 	 * 
-	 * @param anim
-	 * @param key
-	 * @return
+	 * 
+	 * @author Maxmanski
+	 * @param anim The Animation to be added to the collection.
+	 * @param key The Key element to be used for identifying the specified Animation. If this Key element already identifies another Animation, the old Animation will be overridden.
+	 * @return TRUE, if the call of this method has defined a new Animation. FALSE, if the old Animation for the specified Key has been overridden.
 	 */
 	public boolean putAnimation(Animation anim, Key key){
 		boolean newKey=true;
@@ -122,7 +130,7 @@ public class Animations<Key> {
 	 * Deletes the specified Animation mapped to the given Key from this collection.
 	 * Returns a boolean value depending on if something was deleted or not.
 	 * 
-	 * @author Max
+	 * @author Maxmanski
 	 * @return True, if the Animation was found and deleted. False, if no Animation was found and therefore nothing deleted.
 	 */
 	public boolean removeAnimation(Animation anim){
@@ -142,8 +150,8 @@ public class Animations<Key> {
 	 * Deletes the Animation mapped to the specified Key from this collection.
 	 * Returns a boolean value depending on if something was deleted or not.
 	 * 
-	 * @author Max
-	 * @return True, if an Animation was found and deleted. False, if no Animation was found and therefore nothing deleted.
+	 * @author Maxmanski
+	 * @return TRUE, if an Animation was found and deleted. FALSE, if no Animation was found and therefore nothing deleted.
 	 */
 	public boolean removeAnimation(Key key){
 		boolean contained=false;
@@ -160,16 +168,19 @@ public class Animations<Key> {
 	/**
 	 * Returns the currently active Animation.
 	 * 
-	 * @return The currently active Animation. This can be changed with the switchAnimation(...) methods.
+	 * @author Maxmanski
+	 * @return The currently active Animation. This can be changed with the switchAnimation methods.
 	 */
 	public Animation getCurrentAnimation(){
 		return this.currentAnimation;
 	}
 	
 	/**
+	 * Returns the Animation for the specified Key element.
 	 * 
-	 * @param k
-	 * @return
+	 * @author Maxmanski
+	 * @param k The Key element, for which the corresponding Animation should be returned
+	 * @return The Animation corresponding to the specified Key element or NULL, if no corresponding Animation exists.
 	 */
 	public Animation getAnimation(Key k){
 		return this.aniMap.get(k);
@@ -179,6 +190,7 @@ public class Animations<Key> {
 	 * Returns a reference to an Animation in this collection which equals the specified Animation.
 	 * This can be used if a direct reference is needed.
 	 * 
+	 * @author Maxmanski
 	 * @return The Animation in this collection which equals the specified Animation or null, if no such Animation could be found.
 	 */
 	public Animation getAnimation(Animation anim){
