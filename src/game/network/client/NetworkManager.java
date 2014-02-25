@@ -4,30 +4,46 @@ import java.io.IOException;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * 
- * Handles the connection on the client side of the game
+ * A class representing the client side connection of the game.<br/>
+ * A client can connect towards a server ( (ip,port)-Tupel ). <br/>
+ * A client can close his current connection, as well as looking if the connection is still up. <br/>
+ * <br/>
+ * The client uses the following default ports: <br/>
+ * <ul>
+ * <li> 50333 - incoming information from the server UDP
+ * </ul>
  * 
  * @author Iorgreths
- * @version 1.0
+ * @version 2.0
  *
  */
 
 public class NetworkManager {
 
-	private Socket tcpsocket;
-	private DatagramSocket watcher;
-	private DatagramSocket[] player;
-	private NetworkManager instance;
+	private Socket server;
+	//private DatagramSocket outgoinginformation; // the port at which the server expects information
+	private DatagramSocket incominginformation; // the port at which this client expects information
+	private static NetworkManager instance;
 	
 	/*
 	 *  creates a new NetworkManager
 	 */
 	private NetworkManager(){
-		
-		player = new DatagramSocket[4];
 	
+		try {
+			
+			incominginformation = new DatagramSocket(50333);
+			
+		} catch (SocketException e) {
+		
+			e.printStackTrace();
+			
+		}
+		
 	}
 	
 	/**
@@ -35,7 +51,7 @@ public class NetworkManager {
 	 * 
 	 * @return NetworkManager
 	 */
-	public NetworkManager getInstance(){
+	public static NetworkManager getInstance(){
 		
 		if(instance == null) instance = new NetworkManager();
 		
@@ -44,86 +60,38 @@ public class NetworkManager {
 	}
 	
 	/**
-	 * 
-	 * Connects the local machine with the Server. <br/>
-	 * Hereby are two connections created: <br/>
-	 * <ol>
-	 * 	<li> a TCP connection (i.e. for pings) </li>
-	 *  <li> a UDP connection (for watching the game -> Spectator mode) </li>
-	 * </ol>
-	 * An IOException is thrown, if the connections was unsuccessful.
-	 * 
-	 * @param adr - The IPv4-Address of the computer running the Server (Local: 127.0.0.1)
-	 * @param port - The port number, at which the server listens for TCP connections
-	 * @param udpport - The port number, at which the server listens for UDP connections
-	 * @throws IOException - Unable to connect to specified address/port combination
+	 * Connects to a server with the specified (serveraddress,tcpport). <br/>
+	 * Be sure that the server has a ServerSocket open at the specified port. <br/>
+	 * @param serveraddress - The IPv4/IPv6 address of the server
+	 * @param tcpport - The port at which the server waits for incoming connections
+	 * @throws IOException - Unable to connect to the specified information (serveraddress,tcpport)
 	 */
-	public void connect(InetAddress adr, int port, int udpport) throws IOException{
+	public void connect(InetAddress serveraddress, int tcpport) throws IOException{
 		
-		tcpsocket = new Socket(adr, port);
-		watcher = new DatagramSocket();
-		watcher.connect(adr, udpport);
+		server = new Socket(serveraddress, tcpport);
 		
 	}
 	
 	/**
-	 * Connects a player to the server. <br/>
-	 * Hereby a UDP connections toward the server is established. <br/>
-	 * AnIOException is thrown, if the connections was unsuccessful.
-	 * 
-	 * @param adr - The IPv4-Address of the computer running the Server (Local: 127.0.0.1)
-	 * @param port - The port number, at which the server listens for UDP connections
-	 * @throws IOException - Unable to connect to specified address/port combination
+	 * Binds the port at which incoming information shall arrive. <br/>
+	 * UDP packages should be sent towards this port. <br/>
+	 * Default port = 50333;
+	 * @param portnr
+	 * @throws SocketException
 	 */
-	public void connectPlayer(InetAddress adr, int port) throws IOException{
+	public void bindIncomingInformationPort(int portnr) throws SocketException{
 		
-		if(player[0] == null) player[0] = watcher;
-		
-		for(DatagramSocket sock : player){
-			
-			if(sock == null){
-				
-				sock = new DatagramSocket();
-				sock.connect(adr, port);
-				
-			}
-			
-		}
+		incominginformation = new DatagramSocket(portnr);
 		
 	}
 	
 	/**
-	 * Closes all active connections
-	 * 
-	 * @throws IOException - Connection has already been closed (most probably from the server)
+	 * Removes the server, if the connection has been closed by the server
 	 */
-	public void killConnection() throws IOException{
+	public void removeServer(){
 		
-		if( tcpsocket != null ) tcpsocket.close();
-		if( watcher != null ) watcher.close();
-		if( player[1] != null ) player[1].close();
-		if( player[2] != null ) player[2].close();
-		if( player[3] != null ) player[3].close();
-		
-		instance = new NetworkManager();
+		if(server.isClosed()) server = null;
 		
 	}
-	
-	/**
-	 * Disconnects the local player, which is represented by pid, from the server. <br/>
-	 * This is if the player was connected in the first place.
-	 * @param pid - The local representation of the player, which shall be disconnected (i.e. 1 : local player 1)
-	 */
-	public void disconnectLocalPlayer( int pid ){
-		
-		if( player[pid-1] != null ){
-			
-			player[pid-1].close();
-			player[pid-1] = null;
-			
-		}
-		
-	}
-	
 	
 }
