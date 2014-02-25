@@ -1,7 +1,10 @@
 package game.network.server;
 
+import game.network.Message;
+
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -36,6 +39,8 @@ public class NetworkManager {
 	private ServerSocket incomingconnections; // ServerSocket for incoming TCP requests
 	private DatagramSocket incominginformation; // at which port the server expects information
 	
+	private int packetlength; // the length of a udp packet (in byte)
+	
 	/*
 	 * Creates a new NetworkManager without any current connected clients
 	 */
@@ -43,6 +48,7 @@ public class NetworkManager {
 		
 		clients = new ArrayList<Socket>();
 		listenport = 50333;
+		packetlength = 1024;
 		
 		try {
 			
@@ -166,6 +172,61 @@ public class NetworkManager {
 		if(incominginformation.getLocalPort() != 53001) message = String.valueOf(incominginformation.getLocalPort());
 		serverport.write(message);
 		serverport.close();
+		
+	}
+	
+	/**
+	 * Sets a new length for the udp packet. <br/>
+	 * NOTE that this length has to be ident on server and client side. <br/>
+	 * Only use this method if the predefined 1024 byte are not enogh.
+	 * @param packetlength - The new length for udp packets.
+	 */
+	public void setPacketLength(int packetlength){
+		
+		this.packetlength = packetlength;
+		
+	}
+	
+	/**
+	 * Sends a MESSAGE to every connected client. <br/>
+	 * Messages have to implement the interface game.network.Message.java<br/>
+	 * <br/>
+	 * Messages will be send to every client that is registered on this server. 
+	 * Furthermore the server speaks to every client at a specific port <Listening Port>.
+	 * <Listening Port> is predefined as 50333 if this is not usable use <setClientListeningPort(int)> to change the port.
+	 * @param msg - The message, which shall be send to every client
+	 * @throws IOException - Unable to open a new Socket to write information, or unable to connect to <Listening Port> of the client
+	 */
+	public void sendMessageToClients(Message msg) throws IOException{
+		
+		DatagramSocket write = new DatagramSocket();
+		DatagramPacket information = new DatagramPacket(msg.getMessage(), packetlength);
+		
+		for(Socket client : clients){
+			
+			write.connect(client.getInetAddress(), listenport);
+			write.send(information);
+			write.close();
+			
+		}
+		
+		write = null;
+		information = null;
+		
+	}
+	
+	/**
+	 * Receives the next message from the clients. <br/>
+	 * Messages have to implement the interface game.network.Message.java<br/>
+	 * This method stalls until a message has been received. 
+	 * @param msg - The Message object into which the information from the clients shall be written
+	 * @throws IOException - Unable to receive information
+	 */
+	public void receiveMessageFromClients(Message msg) throws IOException{
+		
+		DatagramPacket information = new DatagramPacket(new byte[packetlength], packetlength);
+		incominginformation.receive(information);
+		msg.setMessage(information.getData());
 		
 	}
 	

@@ -1,8 +1,11 @@
 package game.network.client;
 
+import game.network.Message;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -21,26 +24,30 @@ import java.net.SocketException;
  * </ul>
  * 
  * @author Iorgreths
- * @version 2.0
+ * @version 2.1
  *
  */
 
 public class NetworkManager {
 
 	private Socket server;
-	private DatagramSocket outgoinginformation; // the port at which the server expects information
+	private int listenport; // the port at which the server listens for information
 	private DatagramSocket incominginformation; // the port at which this client expects information
 	private static NetworkManager instance;
+	
+	private int packetlength;
 	
 	/*
 	 *  creates a new NetworkManager
 	 */
 	private NetworkManager(){
 	
+		packetlength = 1024;
+		listenport = 53001;
+		
 		try {
 			
 			incominginformation = new DatagramSocket(50333);
-			outgoinginformation = new DatagramSocket(53001);
 			
 		} catch (SocketException e) {
 		
@@ -77,7 +84,7 @@ public class NetworkManager {
 		// now the server tells us at which port he wants the information
 		BufferedReader reader = new BufferedReader(new InputStreamReader(server.getInputStream()));
 		String serverport = reader.readLine();
-		if(! (serverport == null || serverport.equals("") )) outgoinginformation = new DatagramSocket(Integer.valueOf(serverport));
+		if(! (serverport == null || serverport.equals("") )) listenport = Integer.valueOf(serverport);
 		reader.close();
 		
 	}
@@ -101,6 +108,67 @@ public class NetworkManager {
 	public void removeServer(){
 		
 		if(server.isClosed()) server = null;
+		
+	}
+	
+	/**
+	 * Sets a new length for the udp packet. <br/>
+	 * NOTE that this length has to be ident on server and client side. <br/>
+	 * Only use this method if the predefined 1024 byte are not enogh.
+	 * @param packetlength - The new length for udp packets.
+	 */
+	public void setPacketLength(int packetlength){
+		
+		this.packetlength = packetlength;
+		
+	}
+	
+	/**
+	 * Sets the port at which the server expects to hear information about the game. <br/>
+	 * UDP packages will be sent towards that port.
+	 * @param portnr - The port at which the server listens for information (i.e. 50346)
+	 */
+	public void setServerListeningPort(int portnr){
+		
+		listenport = portnr;
+		
+	}
+	
+	/**
+	 * Sends a MESSAGE to the connected server. <br/>
+	 * Messages have to implement the interface game.network.Message.java<br/>
+	 * <br/>
+	 * The client speaks to the server at a specific port <Listening Port>.
+	 * <Listening Port> is predefined as 50333 if this is not usable use <setServerListeningPort(int)> to change the port.
+	 * @param msg - The message, which shall be send to every client
+	 * @throws IOException - Unable to open a new socket to write information, or unable to connect to <Listening Port> of the server
+	 */
+	public void sendMessageToClients(Message msg) throws IOException{
+		
+		DatagramSocket write = new DatagramSocket();
+		DatagramPacket information = new DatagramPacket(msg.getMessage(), packetlength);
+		
+		write.connect(server.getInetAddress(), listenport);
+		write.send(information);
+		write.close();
+		
+		write = null;
+		information = null;
+		
+	}
+	
+	/**
+	 * Receives the next message from the server. <br/>
+	 * Messages have to implement the interface game.network.Message.java<br/>
+	 * This method stalls until a message has been received. 
+	 * @param msg - The Message object into which the information from the server shall be written
+	 * @throws IOException - Unable to receive information
+	 */
+	public void receiveMessageFromClient(Message msg) throws IOException{
+		
+		DatagramPacket information = new DatagramPacket(new byte[packetlength], packetlength);
+		incominginformation.receive(information);
+		msg.setMessage(information.getData());
 		
 	}
 	
