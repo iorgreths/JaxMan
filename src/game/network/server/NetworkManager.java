@@ -1,6 +1,7 @@
 package game.network.server;
 
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -32,7 +33,7 @@ public class NetworkManager {
 	private List<Socket> clients;  // The server sends every client the info about the game
 	private int listenport; // at which ports the client expect the information
 	
-	private ServerSocket incomingconnections;
+	private ServerSocket incomingconnections; // ServerSocket for incoming TCP requests
 	private DatagramSocket incominginformation; // at which port the server expects information
 	
 	/*
@@ -152,12 +153,19 @@ public class NetworkManager {
 	}
 	
 	/**
-	 * Waits for a client to connect to the server.
+	 * Waits for a client to connect to the server. <br/>
+	 * Tells every client at which port this server waits for UDP packages
 	 * @throws IOException - Unable to add another client (all ports occupied?)
 	 */
 	public void nextClient() throws IOException{
 		
 		clients.add(incomingconnections.accept());
+		
+		PrintWriter serverport= new PrintWriter(clients.get(clients.size()-1).getOutputStream());
+		String message = "";
+		if(incominginformation.getLocalPort() != 53001) message = String.valueOf(incominginformation.getLocalPort());
+		serverport.write(message);
+		serverport.close();
 		
 	}
 	

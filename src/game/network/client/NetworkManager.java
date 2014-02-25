@@ -1,6 +1,8 @@
 package game.network.client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -14,7 +16,8 @@ import java.net.SocketException;
  * <br/>
  * The client uses the following default ports: <br/>
  * <ul>
- * <li> 50333 - incoming information from the server UDP
+ * <li> 50333 - incoming information from the server UDP </li>
+ * <li> 53001 - Server incoming information</li>
  * </ul>
  * 
  * @author Iorgreths
@@ -25,7 +28,7 @@ import java.net.SocketException;
 public class NetworkManager {
 
 	private Socket server;
-	//private DatagramSocket outgoinginformation; // the port at which the server expects information
+	private DatagramSocket outgoinginformation; // the port at which the server expects information
 	private DatagramSocket incominginformation; // the port at which this client expects information
 	private static NetworkManager instance;
 	
@@ -37,6 +40,7 @@ public class NetworkManager {
 		try {
 			
 			incominginformation = new DatagramSocket(50333);
+			outgoinginformation = new DatagramSocket(53001);
 			
 		} catch (SocketException e) {
 		
@@ -70,14 +74,20 @@ public class NetworkManager {
 		
 		server = new Socket(serveraddress, tcpport);
 		
+		// now the server tells us at which port he wants the information
+		BufferedReader reader = new BufferedReader(new InputStreamReader(server.getInputStream()));
+		String serverport = reader.readLine();
+		if(! (serverport == null || serverport.equals("") )) outgoinginformation = new DatagramSocket(Integer.valueOf(serverport));
+		reader.close();
+		
 	}
 	
 	/**
 	 * Binds the port at which incoming information shall arrive. <br/>
 	 * UDP packages should be sent towards this port. <br/>
 	 * Default port = 50333;
-	 * @param portnr
-	 * @throws SocketException
+	 * @param portnr - The port at which port this client waits for information
+	 * @throws SocketException - Unable to use this port (already occupied?)
 	 */
 	public void bindIncomingInformationPort(int portnr) throws SocketException{
 		
