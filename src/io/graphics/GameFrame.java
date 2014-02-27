@@ -3,10 +3,11 @@ package io.graphics;
 import game.options.Options;
 
 import java.awt.Canvas;
-import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.DisplayMode;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.image.BufferStrategy;
 
 import javax.swing.JFrame;
 
@@ -25,8 +26,12 @@ public class GameFrame{
 	private final DisplayMode dm;
 	private final int width, height;
 	private static GameFrame instance;
-	private Canvas canvas;
+	private static boolean fullscreen;
 	private final JFrame frame;
+	private final Canvas canvas;
+	private BufferStrategy bufferStrategy;
+	private static boolean visible;
+	private boolean alive;
 
 	/**
 	 * Private constructor of the class GameFrame.
@@ -34,17 +39,27 @@ public class GameFrame{
 	 * @author Maxmanski
 	 * @param fullscreen
 	 */
-	private GameFrame(boolean fullscreen, Canvas canvas){
+	private GameFrame(boolean fullscreen){
+		GameFrame.fullscreen = fullscreen;
+		GameFrame.visible = false;
 		frame = new JFrame();
+		
 		this.dev = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 		this.dm = dev.getDisplayMode();
 		Options o = Options.getInstance();
 
 		this.width = o.getResolution()[0];
 		this.height = o.getResolution()[1];
+		this.alive = true;
 
 		frame.setResizable(false);
 
+
+		this.canvas = new Canvas();
+		this.canvas.setFocusable(false);
+		
+		frame.add(canvas);
+		
 		if(fullscreen && dev.isFullScreenSupported()){
 			frame.setUndecorated(true);
 			dev.setFullScreenWindow(frame);
@@ -52,61 +67,69 @@ public class GameFrame{
 		}else{
 
 			// TODO
-			frame.setBounds((this.dm.getWidth()-this.width)/2, (this.dm.getHeight()-this.height)/2, this.width, this.height);
+			canvas.setPreferredSize(new Dimension(this.width, this.height));
+			frame.setLocation((this.dm.getWidth()-this.width)/2, (this.dm.getHeight()-this.height)/2);
 			frame.setUndecorated(false);
 		}
 
-		if(canvas!=null){
-			canvas.setFocusable(false);
-			frame.getContentPane().add(canvas);
-		}
-
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setVisible(true);
 		frame.requestFocus();
 	}
-
+	
 	/**
-	 * Private Constructor of the class GameFrame
-	 * 
-	 * @author Maxmanski
-	 * @param fullscreen
+	 * TODO
 	 */
-	private GameFrame(boolean fullscreen){
-		this(fullscreen, null);
+	public void setVisible(boolean visible) throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException("The used GameFrame is dead");
+		}
+		
+		if(!GameFrame.fullscreen && visible){
+			this.frame.pack();
+		}
+		
+		this.frame.setVisible(visible);
+		GameFrame.visible=visible;
 	}
 
 	/**
 	 * Sets the fullscreen mode of the game, depending on the passed boolean.<br>
-	 * Also returns a pointer to the current instance.
+	 * If the GameFrame is not set to visible, this method will do nothing and return FALSE.
+	 * Else, TRUE is returned.
 	 * 
 	 * @author Maxmanski
 	 * @param fullscreen A boolean value to decide whether fullscreen mode should be entered or left: <br>
 	 *                   TRUE: Enters fullscreen
 	 *                   FALSE: Leaves fullscreen
-	 * @return Current instance of the GameFrame
+	 * @return 
 	 */
-	public GameFrame setFullscreen(boolean fullscreen){
-		if(GameFrame.instance!=null && GameFrame.instance.hasFullscreen()!=fullscreen){
+	public boolean setFullscreen(boolean fullscreen) throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException("The used GameFrame is dead");
+		}
+		
+		boolean success = false;
+		
+		if(GameFrame.visible){
+			if(GameFrame.instance!=null && GameFrame.instance.hasFullscreen()!=fullscreen){
 
-			GameFrame.instance.dispose();
+				GameFrame.instance.dispose();
+				
+			}
 			
+			if(GameFrame.instance==null){
+
+				GameFrame.instance = new GameFrame(fullscreen);
+				GameFrame.instance.setVisible(true);
+			}
+
+			GameFrame.fullscreen = fullscreen;
+			GameFrame.instance.requestFocus();
+			
+			success=true;
 		}
 		
-		if(GameFrame.instance==null){
-
-			GameFrame.instance = new GameFrame(fullscreen, this.canvas);
-		}
-		
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		GameFrame.instance.requestFocus();
-		return GameFrame.instance;
+		return success;
 	}
 
 	/**
@@ -119,7 +142,11 @@ public class GameFrame{
 
 		if(GameFrame.instance==null){
 			GameFrame.instance = new GameFrame(false);
-			GameFrame.instance.requestFocus();
+			try {
+				GameFrame.instance.requestFocus();
+			} catch (DeadInstanceException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return GameFrame.instance;
@@ -128,12 +155,22 @@ public class GameFrame{
 	/**
 	 * Makes the GameFrame invisible and disposes of it.
 	 * 
+	 * TODO
 	 * @author Maxmanski
 	 */
-	public synchronized void dispose(){
+	public synchronized void dispose() throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException("The used GameFrame is dead");
+		}
+		
 		instance.frame.setVisible(false);
+		instance.bufferStrategy.dispose();
 		instance.frame.dispose();
+		instance.bufferStrategy=null;
+		instance.alive = false;
 		GameFrame.instance=null;
+		GameFrame.fullscreen = false;
+		GameFrame.visible = false;
 	}
 
 	/**
@@ -142,51 +179,87 @@ public class GameFrame{
 	 * @author Maxmanski
 	 * @return A boolean value, depending on whether the GameFrame is the currently active fullscreen application
 	 */
-	public boolean hasFullscreen(){
-		return dev.getFullScreenWindow()==instance.frame;
-	}
-
-	/**
-	 * Sets the currently active Canvas of the GameFrame.<br>
-	 * If there is already another Canvas on the GameFrame, it is being replaced.<br>
-	 * If null is passed as an argumant, nothing happens.
-	 * 
-	 * @author Maxmanski
-	 */
-	public void setCanvas(Canvas canvas){
-		if(canvas!=null){
-			canvas.setFocusable(false);
-			if(instance.canvas!=null && instance.frame!=null){
-				boolean contains = false;
-
-				for(Component c: instance.frame.getContentPane().getComponents()){
-					if(c.equals(this.canvas)){
-						contains = true;
-						break;
-					}
-				}
-
-				if(contains){
-					instance.frame.getContentPane().remove(this.canvas);
-				}
-			}
-
-			instance.frame.getContentPane().add(canvas);
-			instance.canvas = canvas;
+	public boolean hasFullscreen() throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException("The used GameFrame is dead");
 		}
+		
+		return dev.getFullScreenWindow()==instance.frame || GameFrame.fullscreen;
 	}
-	
+
 	/**
 	 * Requests the focus for the GameFrame's window.
 	 * 
 	 * @author Maxmanski
 	 */
-	public void requestFocus(){
+	public void requestFocus() throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException("The used GameFrame is dead");
+		}
+		
 		if(instance!=null && instance.frame!=null && instance.frame.isVisible()){
 			instance.frame.setAlwaysOnTop(true);
 			instance.frame.setAlwaysOnTop(false);
 			instance.frame.requestFocus();
 		}
 	}
+	
+	/**
+	 * TODO
+	 * @return
+	 */
+	public BufferStrategy getBufferStrategy() throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException("The used GameFrame is dead");
+		}
+		
+		if(this.bufferStrategy==null && GameFrame.visible){
+			this.canvas.createBufferStrategy(2);
+			this.bufferStrategy = canvas.getBufferStrategy();
+		}else if(!GameFrame.visible){
+			this.bufferStrategy=null;
+		}
+		
+		return this.bufferStrategy;
+	}
+	
+	/**
+	 * TODO
+	 * @return
+	 */
+	public Dimension getCanvasDimension() throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException("The used GameFrame is dead");
+		}
+		
+		Dimension dim = null;
+		if(this.canvas!=null && GameFrame.visible){
+			dim = this.canvas.getSize();
+		}
+		return dim;
+	}
 
+	/**
+	 * TODO
+	 * @return
+	 */
+	public Dimension getDimension() throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException("The used GameFrame is dead");
+		}
+		
+		Dimension dim = null;
+		if(GameFrame.visible){
+			dim = this.frame.getSize();
+		}
+		return dim;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean isAlive(){
+		return this.alive;
+	}
 }
