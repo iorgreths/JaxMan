@@ -1,6 +1,6 @@
 package game.runtime.server;
 
-import game.network.Message;
+import game.network.message.Message;
 
 /**
  * This class represents the logic behind the server. <br/>

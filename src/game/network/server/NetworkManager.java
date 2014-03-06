@@ -1,6 +1,6 @@
 package game.network.server;
 
-import game.network.Message;
+import game.network.message.Message;
 
 import java.io.IOException;
 import java.io.PrintWriter;

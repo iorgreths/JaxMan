@@ -1,6 +1,6 @@
 package game.network.client;
 
-import game.network.Message;
+import game.network.message.Message;
 
 import java.io.BufferedReader;
 import java.io.IOException;

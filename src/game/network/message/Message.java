@@ -1,4 +1,4 @@
-package game.network;
+package game.network.message;
 
 /**
  * Messages are sent between server and clients
