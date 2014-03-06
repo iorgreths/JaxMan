@@ -3,6 +3,8 @@ package io.sound;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -15,13 +17,14 @@ import javax.sound.sampled.UnsupportedAudioFileException;
  * It is always possible to further add SoundEffects.
  * 
  * @author Iorgreths
- * @version 1.4
+ * @version 1.5
  */
 public class SoundManager {
 
 	private Map<String, SoundClip> sound_effects; // All SoundEffects of the game
 	private BGMThread bgmthread; // The thread working the background music
-	private SoundEffectsThread[] soundeff; // The thread working the SoundEffects
+//	private SoundEffectsThread[] soundeff; // The thread working the SoundEffects
+	private ExecutorService soundeff_pool; // The pool of threads working the SoundEffects
 	private static SoundManager instance; // the SOUNDMANAGER of the program
 	
 	/*
@@ -33,7 +36,9 @@ public class SoundManager {
 		
 		sound_effects = new HashMap<String, SoundClip>();
 		bgmthread = new BGMThread();
+		soundeff_pool = Executors.newCachedThreadPool();
 		
+		/*
 		// init soundeffects threads
 		soundeff = new SoundEffectsThread[2];
 		
@@ -42,6 +47,7 @@ public class SoundManager {
 			soundeff[i] = new SoundEffectsThread();
 			
 		}
+		*/
 		
 	}
 	
@@ -146,7 +152,11 @@ public class SoundManager {
 	 */
 	public void playSound(String identifier) throws LineUnavailableException{
 		
-		if(!soundeff[0].threadBusy()){
+		SoundEffectsThread sound = new SoundEffectsThread();
+		sound.setSoundEffect(sound_effects.get(identifier));
+		soundeff_pool.execute(sound);
+		
+		/*if(!soundeff[0].threadBusy()){
 			
 			soundeff[0].setSoundEffect(sound_effects.get(identifier));
 			Thread effect = new Thread(soundeff[0]);
@@ -159,7 +169,7 @@ public class SoundManager {
 			effect.start();
 			
 		}
-		
+		*/
 	}
 	
 }
