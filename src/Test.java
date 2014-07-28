@@ -4,7 +4,6 @@ import io.InputListener;
 import io.graphics.DeadInstanceException;
 import io.graphics.GameFrame;
 
-import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -20,7 +19,6 @@ public class Test {
 		Game game = new TestGame();
 		GameFrame gf = game.getFrame();
 		gf.setVisible(true);
-		gf.getBufferStrategy();
 
 		BufferStrategy strat = gf.getBufferStrategy();
 		Dimension d = gf.getCanvasDimension();
@@ -41,7 +39,6 @@ public class Test {
 
 		Thread.sleep(500);
 
-		//
 		gf.setFullscreen(true);
 		gf = GameFrame.getInstance();
 
@@ -58,25 +55,6 @@ public class Test {
 			strat.show();
 			Thread.sleep(5);
 		}
-
-		//
-//		gf.setFullscreen(false);
-//		gf = GameFrame.getInstance();
-//		gf.setVisible(true);
-//		d = gf.getCanvasDimension();
-//
-//		strat = gf.getBufferStrategy();
-//		g = strat.getDrawGraphics();
-//
-//		for(int i=0; i < 1000; i++){
-//			g.setColor(Color.gray);
-//			g.fillRect(0, 0, d.width, d.height);
-//			g.setColor(Color.black);
-//			g.drawString("GOOD BYE", d.width/2, d.height/2);
-//			g.dispose();
-//			strat.show();
-//			Thread.sleep(1);
-//		}
 
 		Thread.sleep(500);
 		System.exit(0);
@@ -115,12 +93,13 @@ class TestGame extends Game{
 	public void mouseClicked(MouseEvent e) {
 		BufferStrategy b;
 		try {
-			b = this.frame.getBufferStrategy();
+			b = GameFrame.getInstance().getBufferStrategy();
 			Graphics2D g = (Graphics2D) b.getDrawGraphics();
 			g.setColor(Color.blue);
 			g.drawOval(e.getX(), e.getY(), 50, 50);
+			g.dispose();
+			b.show();
 		} catch (DeadInstanceException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	}

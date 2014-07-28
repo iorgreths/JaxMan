@@ -9,13 +9,11 @@ import java.awt.event.MouseEvent;
 public abstract class Game implements Observer{
 
 	protected Mode gameMode;
-	protected GameFrame frame;
 	protected static Game instance;
 	protected InputListener inListener;
 	
 	protected Game(InputListener in){
-		frame = GameFrame.getInstance();
-		frame.setInputListener(in);
+		GameFrame.getInstance().setInputListener(in);
 		this.inListener = in;
 		this.inListener.setGame(this);
 	}
@@ -23,7 +21,7 @@ public abstract class Game implements Observer{
 	public abstract void gameLoop();
 	
 	public GameFrame getFrame(){
-		return this.frame;
+		return GameFrame.getInstance();
 	}
 	
 	public Mode getMode(){
@@ -32,10 +30,6 @@ public abstract class Game implements Observer{
 	
 	public void setInputListener(InputListener in){
 		this.inListener = in;
-	}
-	
-	public void setGameFrameInstance(GameFrame gf){
-		this.frame = gf;
 	}
 	
 	public abstract void mouseDragged(MouseEvent e);

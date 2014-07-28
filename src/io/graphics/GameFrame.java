@@ -7,9 +7,11 @@ import io.InputListener;
 import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
+import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.image.BufferStrategy;
+import java.util.List;
 
 import javax.swing.JFrame;
 
@@ -93,6 +95,7 @@ public class GameFrame{
 		}
 		
 		this.frame.setVisible(visible);
+		this.getBufferStrategy();
 		GameFrame.visible=visible;
 	}
 
@@ -114,6 +117,7 @@ public class GameFrame{
 		
 		InputListener oldListener = GameFrame.instance.in;
 		Game oldGame = GameFrame.instance.game;
+		
 		boolean success = false;
 		
 		if(GameFrame.visible){
@@ -129,6 +133,7 @@ public class GameFrame{
 				GameFrame.instance.setListener(oldListener);
 				GameFrame.instance.setGame(oldGame);
 				GameFrame.instance.setVisible(true);
+				GameFrame.instance.getBufferStrategy();
 			}
 
 			GameFrame.fullscreen = fullscreen;
@@ -232,6 +237,33 @@ public class GameFrame{
 	}
 	
 	/**
+	 * 
+	 * @param drawList
+	 * @throws DeadInstanceException
+	 */
+	public synchronized void draw(List<Drawable> drawList) throws DeadInstanceException{
+		this.draw(drawList, 1f);
+	}
+	
+	/**
+	 * 
+	 * @param drawList
+	 * @param scale
+	 * @throws DeadInstanceException
+	 */
+	public synchronized void draw(List<Drawable> drawList, float scale) throws DeadInstanceException{
+		BufferStrategy bs = this.getBufferStrategy();
+		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
+		
+		g.clearRect(0, 0, this.getCanvasDimension().width, this.getCanvasDimension().height);
+		for(Drawable d: drawList){
+			d.draw(g, scale);
+		}
+		g.dispose();
+		bs.show();
+	}
+	
+	/**
 	 * TODO
 	 * @return
 	 */
@@ -275,7 +307,6 @@ public class GameFrame{
 		this.game = g;
 		if(g!=null){
 			g.setInputListener(this.in);
-			g.setGameFrameInstance(this);
 		}
 	}
 	
