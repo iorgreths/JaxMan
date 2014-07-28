@@ -1,19 +1,26 @@
 import game.runtime.Game;
 import game.runtime.Observable;
+import io.InputListener;
 import io.graphics.DeadInstanceException;
 import io.graphics.GameFrame;
 
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferStrategy;
 
 
 public class Test {
 	public static void main(String[] args) throws InterruptedException, DeadInstanceException{
 
-		GameFrame gf = GameFrame.getInstance();
+		Game game = new TestGame();
+		GameFrame gf = game.getFrame();
 		gf.setVisible(true);
+		gf.getBufferStrategy();
 
 		BufferStrategy strat = gf.getBufferStrategy();
 		Dimension d = gf.getCanvasDimension();
@@ -83,7 +90,7 @@ class TestGame extends Game{
 	}
 
 	public TestGame(){
-		super();
+		super(new InputListener());
 	}
 
 	public static Game getInstance(){
@@ -94,8 +101,64 @@ class TestGame extends Game{
 	}
 
 	public void gameLoop() {
+		
 
+	}
 
+	@Override
+	public void mouseDragged(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseClicked(MouseEvent e) {
+		BufferStrategy b;
+		try {
+			b = this.frame.getBufferStrategy();
+			Graphics2D g = (Graphics2D) b.getDrawGraphics();
+			g.setColor(Color.blue);
+			g.drawOval(e.getX(), e.getY(), 50, 50);
+		} catch (DeadInstanceException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
+
+	@Override
+	public void mousePressed(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void mouseMoved(MouseEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e) {
+		if(e.getKeyCode() == KeyEvent.VK_ESCAPE){
+			System.exit(0);
+		}
+	}
+
+	@Override
+	public void keyReleased(KeyEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void keyTyped(KeyEvent e) {
+		
 	}
 
 }

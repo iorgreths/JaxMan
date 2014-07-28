@@ -1,6 +1,8 @@
 package io.graphics;
 
 import game.options.Options;
+import game.runtime.Game;
+import io.InputListener;
 
 import java.awt.Canvas;
 import java.awt.Dimension;
@@ -32,7 +34,9 @@ public class GameFrame{
 	private BufferStrategy bufferStrategy;
 	private static boolean visible;
 	private boolean alive;
-
+	private InputListener in;
+	private Game game;
+	
 	/**
 	 * Private constructor of the class GameFrame.
 	 * 
@@ -54,7 +58,7 @@ public class GameFrame{
 
 		frame.setResizable(false);
 
-
+		this.in = null;
 		this.canvas = new Canvas();
 		this.canvas.setFocusable(false);
 		
@@ -108,6 +112,8 @@ public class GameFrame{
 			throw new DeadInstanceException("The used GameFrame is dead");
 		}
 		
+		InputListener oldListener = GameFrame.instance.in;
+		Game oldGame = GameFrame.instance.game;
 		boolean success = false;
 		
 		if(GameFrame.visible){
@@ -120,6 +126,8 @@ public class GameFrame{
 			if(GameFrame.instance==null){
 
 				GameFrame.instance = new GameFrame(fullscreen);
+				GameFrame.instance.setListener(oldListener);
+				GameFrame.instance.setGame(oldGame);
 				GameFrame.instance.setVisible(true);
 			}
 
@@ -238,7 +246,7 @@ public class GameFrame{
 		}
 		return dim;
 	}
-
+	
 	/**
 	 * TODO
 	 * @return
@@ -261,5 +269,38 @@ public class GameFrame{
 	 */
 	public boolean isAlive(){
 		return this.alive;
+	}
+	
+	public void setGame(Game g){
+		this.game = g;
+		if(g!=null){
+			g.setInputListener(this.in);
+			g.setGameFrameInstance(this);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param i
+	 */
+	public void setInputListener(InputListener i){
+		this.setListener(i);
+		this.in = i;
+	}
+	
+	/**
+	 * 
+	 * @param i
+	 */
+	private void setListener(InputListener i){
+		this.frame.addKeyListener(i);
+		this.frame.addMouseListener(i);
+		this.frame.addMouseMotionListener(i);
+		this.canvas.addKeyListener(i);
+		this.canvas.addMouseListener(i);
+		this.canvas.addMouseMotionListener(i);
+		this.frame.getContentPane().addMouseListener(i);
+		this.frame.getContentPane().addKeyListener(i);
+		this.frame.getContentPane().addMouseMotionListener(i);
 	}
 }
