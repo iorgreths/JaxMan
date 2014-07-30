@@ -10,6 +10,7 @@ import java.awt.DisplayMode;
 import java.awt.Graphics2D;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.awt.Point;
 import java.awt.image.BufferStrategy;
 import java.util.List;
 
@@ -34,10 +35,12 @@ public class GameFrame{
 	private final JFrame frame;
 	private final Canvas canvas;
 	private BufferStrategy bufferStrategy;
-	private static boolean visible;
+	private static boolean visible = false;
 	private boolean alive;
 	private InputListener in;
 	private Game game;
+	private double scaleX, scaleY;
+	private Dimension resolution;
 	
 	/**
 	 * Private constructor of the class GameFrame.
@@ -46,46 +49,61 @@ public class GameFrame{
 	 * @param fullscreen
 	 */
 	private GameFrame(boolean fullscreen){
-		GameFrame.fullscreen = fullscreen;
-		GameFrame.visible = false;
-		frame = new JFrame();
-		
-		this.dev = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		this.dm = dev.getDisplayMode();
-		Options o = Options.getInstance();
+		synchronized(this){
+			GameFrame.fullscreen = fullscreen;
+			GameFrame.visible = false;
+			frame = new JFrame();
 
-		this.width = o.getResolution()[0];
-		this.height = o.getResolution()[1];
-		this.alive = true;
+			this.dev = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+			this.dm = dev.getDisplayMode();
+			Options o = Options.getInstance();
 
-		frame.setResizable(false);
+			this.width = o.getResolution()[0];
+			this.height = o.getResolution()[1];
+			this.alive = true;
 
-		this.in = null;
-		this.canvas = new Canvas();
-		this.canvas.setFocusable(false);
-		
-		frame.add(canvas);
-		
-		if(fullscreen && dev.isFullScreenSupported()){
-			frame.setUndecorated(true);
-			dev.setFullScreenWindow(frame);
+			frame.setResizable(false);
 
-		}else{
+			this.in = null;
+			this.canvas = new Canvas();
+			this.canvas.setFocusable(false);
 
-			// TODO
-			canvas.setPreferredSize(new Dimension(this.width, this.height));
-			frame.setLocation((this.dm.getWidth()-this.width)/2, (this.dm.getHeight()-this.height)/2);
-			frame.setUndecorated(false);
+
+			if(GameFrame.instance != null && GameFrame.instance.resolution != null){
+
+				this.resolution = GameFrame.instance.resolution;
+			}else{
+
+				this.resolution = new Dimension(640,480);
+			}
+
+			this.canvas.setPreferredSize(new Dimension(640,480));
+
+			frame.add(canvas);
+
+			if(fullscreen && dev.isFullScreenSupported()){
+				frame.setUndecorated(true);
+				dev.setFullScreenWindow(frame);
+
+			}else{
+
+				// TODO
+//				canvas.setPreferredSize(new Dimension(this.width, this.height));
+				frame.setLocation((this.dm.getWidth()-this.width)/2, (this.dm.getHeight()-this.height)/2);
+				frame.setUndecorated(false);
+			}
+
+			this.scaleX = canvas.getWidth() / this.resolution.getWidth();
+			this.scaleY = canvas.getHeight() / this.resolution.getHeight();
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			frame.requestFocus();
 		}
-
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.requestFocus();
 	}
 	
 	/**
 	 * TODO
 	 */
-	public void setVisible(boolean visible) throws DeadInstanceException{
+	public synchronized void setVisible(boolean visible) throws DeadInstanceException{
 		if(!this.alive){
 			throw new DeadInstanceException("The used GameFrame is dead");
 		}
@@ -97,6 +115,8 @@ public class GameFrame{
 		this.frame.setVisible(visible);
 		this.getBufferStrategy();
 		GameFrame.visible=visible;
+		this.scaleX = canvas.getWidth() / this.resolution.getWidth();
+		this.scaleY = canvas.getHeight() / this.resolution.getHeight();
 	}
 
 	/**
@@ -110,31 +130,55 @@ public class GameFrame{
 	 *                   FALSE: Leaves fullscreen
 	 * @return 
 	 */
-	public boolean setFullscreen(boolean fullscreen) throws DeadInstanceException{
+	public synchronized boolean setFullscreen(boolean fullscreen) throws DeadInstanceException{
 		if(!this.alive){
 			throw new DeadInstanceException("The used GameFrame is dead");
 		}
 		
-		InputListener oldListener = GameFrame.instance.in;
-		Game oldGame = GameFrame.instance.game;
+		InputListener oldListener=null;
+		Game oldGame=null;
+		Dimension oldDimension=null;
+		boolean oldVis = GameFrame.visible, success = false;
 		
-		boolean success = false;
-		
-		if(GameFrame.visible){
-			if(GameFrame.instance!=null && GameFrame.instance.hasFullscreen()!=fullscreen){
+		if(GameFrame.instance != null){
 
+			oldListener = GameFrame.instance.in;
+			oldGame = GameFrame.instance.game;
+			oldDimension = GameFrame.instance.resolution;
+			
+			if(GameFrame.instance.hasFullscreen()!=fullscreen){
 				GameFrame.instance.dispose();
-				
 			}
 			
-			if(GameFrame.instance==null){
+		}
+		
+		// if there is no old instance or it has been disposed of...
+		if(GameFrame.instance == null){
 
-				GameFrame.instance = new GameFrame(fullscreen);
-				GameFrame.instance.setListener(oldListener);
-				GameFrame.instance.setGame(oldGame);
-				GameFrame.instance.setVisible(true);
-				GameFrame.instance.getBufferStrategy();
-			}
+			GameFrame.instance = new GameFrame(fullscreen);
+			GameFrame.instance.setVisible(oldVis);
+			GameFrame.instance.getBufferStrategy();
+		}
+		
+		
+		if(!GameFrame.fullscreen){
+			
+			GameFrame.instance.setVisible(false);
+			GameFrame.visible = false;
+			GameFrame.instance.canvas.setPreferredSize(oldDimension);
+			GameFrame.instance.frame.pack();
+			GameFrame.instance.setVisible(oldVis);
+			GameFrame.visible = oldVis;
+		}
+		
+		GameFrame.instance.setInputListener(oldListener);
+		GameFrame.instance.setGame(oldGame);
+		
+		if(GameFrame.visible){
+			
+			GameFrame.instance.resolution = oldDimension;
+			GameFrame.instance.scaleX = GameFrame.instance.canvas.getWidth() / oldDimension.getWidth();
+			GameFrame.instance.scaleY = GameFrame.instance.canvas.getHeight() / oldDimension.getHeight();
 
 			GameFrame.fullscreen = fullscreen;
 			GameFrame.instance.requestFocus();
@@ -146,12 +190,57 @@ public class GameFrame{
 	}
 
 	/**
+	 * 
+	 * @param d
+	 * @throws DeadInstanceException 
+	 */
+	public synchronized void setResolution(Dimension d) throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException();
+		}
+		
+		if(d!=null){
+			boolean oldVis = GameFrame.visible;
+			
+			this.setVisible(false);
+			GameFrame.visible = false;
+			
+			if(!GameFrame.fullscreen){
+
+				this.canvas.setPreferredSize(d);
+				this.frame.pack();
+			}
+			
+			this.setVisible(oldVis);
+			GameFrame.visible = oldVis;
+
+			this.resolution = d;
+			this.scaleX = this.canvas.getWidth() / this.resolution.getWidth();
+			this.scaleY = this.canvas.getHeight() / this.resolution.getHeight();
+			this.getBufferStrategy();
+		}
+	}
+	
+	/**
+	 * 
+	 * @return
+	 * @throws DeadInstanceException
+	 */
+	public synchronized Dimension getResolution() throws DeadInstanceException{
+		if(!this.alive){
+			throw new DeadInstanceException();
+		}
+		
+		return this.resolution;
+	}
+	
+	/**
 	 * Returns the current instance of the GameFrame or instantiates a new one, if none is present yet.
 	 * 
 	 * @author Maxmanski
 	 * @return Current instance of the GameFrame
 	 */
-	public static GameFrame getInstance(){
+	public synchronized static GameFrame getInstance(){
 
 		if(GameFrame.instance==null){
 			GameFrame.instance = new GameFrame(false);
@@ -192,7 +281,7 @@ public class GameFrame{
 	 * @author Maxmanski
 	 * @return A boolean value, depending on whether the GameFrame is the currently active fullscreen application
 	 */
-	public boolean hasFullscreen() throws DeadInstanceException{
+	public synchronized boolean hasFullscreen() throws DeadInstanceException{
 		if(!this.alive){
 			throw new DeadInstanceException("The used GameFrame is dead");
 		}
@@ -205,7 +294,7 @@ public class GameFrame{
 	 * 
 	 * @author Maxmanski
 	 */
-	public void requestFocus() throws DeadInstanceException{
+	public synchronized void requestFocus() throws DeadInstanceException{
 		if(!this.alive){
 			throw new DeadInstanceException("The used GameFrame is dead");
 		}
@@ -221,7 +310,7 @@ public class GameFrame{
 	 * TODO
 	 * @return
 	 */
-	public BufferStrategy getBufferStrategy() throws DeadInstanceException{
+	public synchronized BufferStrategy getBufferStrategy() throws DeadInstanceException{
 		if(!this.alive){
 			throw new DeadInstanceException("The used GameFrame is dead");
 		}
@@ -242,7 +331,7 @@ public class GameFrame{
 	 * @throws DeadInstanceException
 	 */
 	public synchronized void draw(List<Drawable> drawList) throws DeadInstanceException{
-		this.draw(drawList, 1f);
+		this.draw(drawList, scaleX, scaleY);
 	}
 	
 	/**
@@ -251,13 +340,13 @@ public class GameFrame{
 	 * @param scale
 	 * @throws DeadInstanceException
 	 */
-	public synchronized void draw(List<Drawable> drawList, float scale) throws DeadInstanceException{
+	public synchronized void draw(List<Drawable> drawList, double scaleX, double scaleY) throws DeadInstanceException{
 		BufferStrategy bs = this.getBufferStrategy();
 		Graphics2D g = (Graphics2D) bs.getDrawGraphics();
 		
 		g.clearRect(0, 0, this.getCanvasDimension().width, this.getCanvasDimension().height);
 		for(Drawable d: drawList){
-			d.draw(g, scale);
+			d.draw(g, scaleX, scaleY);
 		}
 		g.dispose();
 		bs.show();
@@ -267,7 +356,7 @@ public class GameFrame{
 	 * TODO
 	 * @return
 	 */
-	public Dimension getCanvasDimension() throws DeadInstanceException{
+	public synchronized Dimension getCanvasDimension() throws DeadInstanceException{
 		if(!this.alive){
 			throw new DeadInstanceException("The used GameFrame is dead");
 		}
@@ -283,7 +372,7 @@ public class GameFrame{
 	 * TODO
 	 * @return
 	 */
-	public Dimension getDimension() throws DeadInstanceException{
+	public synchronized Dimension getDimension() throws DeadInstanceException{
 		if(!this.alive){
 			throw new DeadInstanceException("The used GameFrame is dead");
 		}
@@ -299,11 +388,11 @@ public class GameFrame{
 	 * 
 	 * @return
 	 */
-	public boolean isAlive(){
+	public synchronized boolean isAlive(){
 		return this.alive;
 	}
 	
-	public void setGame(Game g){
+	public synchronized void setGame(Game g){
 		this.game = g;
 		if(g!=null){
 			g.setInputListener(this.in);
@@ -314,7 +403,7 @@ public class GameFrame{
 	 * 
 	 * @param i
 	 */
-	public void setInputListener(InputListener i){
+	public synchronized void setInputListener(InputListener i){
 		this.setListener(i);
 		this.in = i;
 	}
@@ -323,7 +412,7 @@ public class GameFrame{
 	 * 
 	 * @param i
 	 */
-	private void setListener(InputListener i){
+	private synchronized void setListener(InputListener i){
 		this.frame.addKeyListener(i);
 		this.frame.addMouseListener(i);
 		this.frame.addMouseMotionListener(i);
@@ -333,5 +422,39 @@ public class GameFrame{
 		this.frame.getContentPane().addMouseListener(i);
 		this.frame.getContentPane().addKeyListener(i);
 		this.frame.getContentPane().addMouseMotionListener(i);
+	}
+	
+	/**
+	 * 
+	 * @param location
+	 * @return
+	 */
+	public synchronized static Point toCanvasCoordinates(Point location){
+		if(location == null || !GameFrame.visible){
+			return null;
+		}
+		
+		Point p=null;
+		
+		if(GameFrame.getInstance().frame.isVisible()){
+			
+			int x = location.x, y = location.y;
+			double sX = GameFrame.getInstance().scaleX, sY = GameFrame.getInstance().scaleY;
+			
+			Point cP = GameFrame.getInstance().canvas.getLocationOnScreen();
+			int cX = cP.x, cY = cP.y;
+			
+			p = new Point((int)((x-cX)*sX), (int)((y-cY)*sY));
+		}
+		
+		return p;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public synchronized static boolean isVisible(){
+		return GameFrame.getInstance().frame.isVisible();
 	}
 }

@@ -19,7 +19,7 @@ public interface Drawable {
 	 * @param g
 	 * @param scale
 	 */
-	public void draw(Graphics g, float scale);
+	public void draw(Graphics g, double scaleX, double scaleY);
 	
 	/**
 	 * Has to return the Drawable's X coordinate on a 2D plain.
