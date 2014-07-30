@@ -79,8 +79,6 @@ public class Test {
 			Thread.sleep(5);
 		}
 
-		Thread.sleep(500);
-		System.exit(0);
 	}
 }
 
