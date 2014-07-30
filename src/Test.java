@@ -10,9 +10,9 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
-import java.awt.geom.Ellipse2D;
 import java.awt.geom.Line2D;
 import java.awt.image.BufferStrategy;
 import java.util.ArrayList;
@@ -64,7 +64,8 @@ public class Test {
 
 		gf.setFullscreen(true);
 		gf = GameFrame.getInstance();
-
+		gf.setResolution(Toolkit.getDefaultToolkit().getScreenSize());
+		
 		strat = gf.getBufferStrategy();
 		d = gf.getCanvasDimension();
 		Dimension d2 = gf.getResolution();
@@ -147,8 +148,15 @@ class TestGame extends Game{
 	}
 
 	@Override
-	public void mouseDragged(MouseEvent e) {
-		// TODO Auto-generated method stub
+	public synchronized void mouseDragged(MouseEvent e) {
+
+		if(GameFrame.isVisible()){
+
+			if(this.mouseLocation != null){
+				Test.shapeList.add(new Line2D.Double(this.mouseLocation, GameFrame.toCanvasCoordinates(e.getLocationOnScreen())));
+			}
+			this.mouseLocation = GameFrame.toCanvasCoordinates(e.getLocationOnScreen());
+		}
 
 	}
 
@@ -158,25 +166,18 @@ class TestGame extends Game{
 
 	@Override
 	public synchronized void mousePressed(MouseEvent e) {
-		Test.shapeList.add(new Ellipse2D.Double(e.getX(), e.getY(), 10, 10));
+//		Test.shapeList.add(new Ellipse2D.Double(e.getX(), e.getY(), 10, 10));
 
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent e) {
-		// TODO Auto-generated method stub
-
+	public synchronized void mouseReleased(MouseEvent e) {
+		this.mouseLocation = null;
 	}
 
 	@Override
 	public synchronized void mouseMoved(MouseEvent e) {
-		if(GameFrame.isVisible()){
-
-			if(this.mouseLocation != null){
-				Test.shapeList.add(new Line2D.Double(this.mouseLocation, GameFrame.toCanvasCoordinates(e.getLocationOnScreen())));
-			}
-			this.mouseLocation = GameFrame.toCanvasCoordinates(e.getLocationOnScreen());
-		}
+		
 	}
 
 	@Override
