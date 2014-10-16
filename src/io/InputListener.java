@@ -12,27 +12,27 @@ public class InputListener implements KeyListener, MouseListener, MouseMotionLis
 
 	protected Game listeningGame = null;
 
-	public void setGame(Game g){
+	public synchronized void setGame(Game g){
 		this.listeningGame = g;
 	}
 
 	@Override
-	public void mouseClicked(MouseEvent e){
+	public synchronized void mouseClicked(MouseEvent e){
 		if(this.listeningGame != null){
 			this.listeningGame.mouseClicked(e);
 		}
 	}
 
 	@Override
-	public void mouseEntered(MouseEvent e){
+	public synchronized void mouseEntered(MouseEvent e){
 	}
 
 	@Override
-	public void mouseExited(MouseEvent e){
+	public synchronized void mouseExited(MouseEvent e){
 	}
 
 	@Override
-	public void mousePressed(MouseEvent e){
+	public synchronized void mousePressed(MouseEvent e){
 		if(this.listeningGame != null){
 			this.listeningGame.mousePressed(e);
 
@@ -40,7 +40,7 @@ public class InputListener implements KeyListener, MouseListener, MouseMotionLis
 	}
 
 	@Override
-	public void mouseReleased(MouseEvent e){
+	public synchronized void mouseReleased(MouseEvent e){
 		if(this.listeningGame != null){
 			this.listeningGame.mouseReleased(e);
 
@@ -48,7 +48,7 @@ public class InputListener implements KeyListener, MouseListener, MouseMotionLis
 	}
 
 	@Override
-	public void keyPressed(KeyEvent e){
+	public synchronized void keyPressed(KeyEvent e){
 		if(this.listeningGame != null){
 			this.listeningGame.keyPressed(e);
 
@@ -56,7 +56,7 @@ public class InputListener implements KeyListener, MouseListener, MouseMotionLis
 	}
 
 	@Override
-	public void keyReleased(KeyEvent e){
+	public synchronized void keyReleased(KeyEvent e){
 		if(this.listeningGame != null){
 			this.listeningGame.keyReleased(e);
 
@@ -64,7 +64,7 @@ public class InputListener implements KeyListener, MouseListener, MouseMotionLis
 	}
 
 	@Override
-	public void keyTyped(KeyEvent e){
+	public synchronized void keyTyped(KeyEvent e){
 		if(this.listeningGame != null){
 			this.listeningGame.keyTyped(e);
 
@@ -72,7 +72,7 @@ public class InputListener implements KeyListener, MouseListener, MouseMotionLis
 	}
 
 	@Override
-	public void mouseDragged(MouseEvent e){
+	public synchronized void mouseDragged(MouseEvent e){
 		if(this.listeningGame != null){
 			this.listeningGame.mouseDragged(e);
 
@@ -80,7 +80,7 @@ public class InputListener implements KeyListener, MouseListener, MouseMotionLis
 	}
 
 	@Override
-	public void mouseMoved(MouseEvent e){
+	public synchronized void mouseMoved(MouseEvent e){
 		if(this.listeningGame != null){
 			this.listeningGame.mouseMoved(e);
 
